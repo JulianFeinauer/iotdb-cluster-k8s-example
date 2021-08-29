@@ -31,3 +31,14 @@ kubectl port-forward -n iotdb2 pods/cluster2-seeds-0 6667:6667
 ```
 
 and use the cli to connect to the cluster with default settings (localhost and port 6667).
+
+## Further Notice
+
+This is not starting iotdb `0.12.2` directly but a slightly patched version from the branch https://github.com/apache/iotdb/tree/experimental/0.12.2-cluster-for-k8s which is based on the release 0.12.2 branch.
+
+**Changes**
+```
+Patches for rel/0.12 to make it run on k8s.
+* No IP resolution at startup
+* if the string "hostname" is set as "internal_ip" in iotdb-cluster.properties it will resolve the hostname at startup (FQDN) and set as internal_ip parameter
+```
