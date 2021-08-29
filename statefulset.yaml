@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cluster2-seeds
+spec:
+  selector:
+    matchLabels:
+      type: iotdb-set
+      instance: cluster2
+  serviceName: cluster2
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        type: iotdb-set
+        instance: cluster2
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: iotdb
+          image: jfeinauer/apache-iotdb-cluster:0.12.2
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 6667
+              name: iotdb
+            - containerPort: 6567
+              name: iotdb-cluster
+            - containerPort: 9003
+              name: metaport
+            - containerPort: 40010
+              name: dataservice
+            - containerPort: 40011
+              name: heartbeat
+#          env:
+#            - name: INTERNAL_IP
+#              valueFrom:
+#                fieldRef:
+#                  fieldPath: metadata.name
+          volumeMounts:
+            - name: storage
+              mountPath: /iotdb/data
+            - name: config-volume
+              mountPath: /iotdb/conf
+          readinessProbe:
+            tcpSocket:
+              port: 9003
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 9003
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: config-volume
+          configMap:
+            name: cluster2-config
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
